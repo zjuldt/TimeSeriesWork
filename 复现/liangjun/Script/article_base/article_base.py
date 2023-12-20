@@ -37,7 +37,7 @@ def create_dataset(dataset, look_back):
 
 
 def create_model(look_back=50, n_output=3, feature_num=20, batch_size=64,
-                 encoder_units=256,
+                 encoder_units=128,
                  decoder_units=128):
     # 共用了同一个特征提取器
 
@@ -85,8 +85,11 @@ def create_model(look_back=50, n_output=3, feature_num=20, batch_size=64,
 
     # 将所有时间步的编码器输出进行拼接
     encoder_output = Concatenate(axis=1)(encoder_output_list)  # TODO： Step——3 ： 变成一行
+    # shape = [64, 6400]
     # 对编码器输出进行形状变换
     encoder_output = Reshape((encoder_units, look_back))(encoder_output)
+    # encoder-output shape = [64,128,50]
+
     # 对编码器输出进行轴换序
     encoder_output = Permute((2, 1))(encoder_output)  # 好怪
 
@@ -118,6 +121,7 @@ def create_model(look_back=50, n_output=3, feature_num=20, batch_size=64,
     for t in range(n_output):
         # 将上一个解码状态重复 look_back 次，并与编码器输出进行拼接
         con = Concatenate(axis=1)([h_prev_de] * look_back)  # 要look_back 长度 的h_prev_de
+        # con shape = [64, 50, 256]
         # 将拼接结果与编码器输出进行再次拼接
         concat2 = Concatenate(axis=2)([encoder_output, con])  # 拼接了
         # 经过全连接层得到能量
