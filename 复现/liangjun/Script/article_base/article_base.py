@@ -184,7 +184,7 @@ batch_size = 40
 look_back = 50
 feature_num = 20
 
-table = loadmat(r"/复现/liangjun/data/cigarette/cigarette/original data.mat")
+table = loadmat(r"D:\PythonProject\TimeSeriesWork\复现\liangjun\data\cigarette\cigarette\original data.mat")
 data = table['datante']
 
 scaler = MinMaxScaler()
@@ -202,7 +202,7 @@ print(trainX.shape, train_Y.shape)
 print(testX.shape, test_Y.shape)
 
 model = create_model(look_back=look_back, n_output=3, feature_num=20, batch_size=batch_size,
-                     encoder_units=256,
+                     encoder_units=128,
                      decoder_units=128)
 adam = optimizers.Adam(lr=2e-3)
 model.compile(loss='mean_squared_error', optimizer=adam)  # loss = MSE

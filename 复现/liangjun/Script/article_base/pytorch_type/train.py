@@ -3,13 +3,23 @@ import random
 
 import torch
 import torch.nn as nn
-from torch_base_model import BaseModel
+from sklearn.preprocessing import MinMaxScaler
+
+
 from scipy.io import loadmat
 import numpy as np
 
+from 复现.liangjun.Test.torch_base_model import BaseModel
+
+# 设置设备
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# print("device :", device)
 # 论文模型
+# model = BaseModel()
+# print(model)
+
 model = BaseModel()
-print(model)
+
 # 加载数据
 batch_size = 64
 look_back = 50
@@ -37,6 +47,9 @@ def create_dataset(dataset, look_back):
     return np.array(X), np.array(Y)
 
 
+scaler = MinMaxScaler()
+data = scaler.fit_transform(data)
+
 X, Y = create_dataset(data, look_back)
 Y = Y.squeeze()
 
@@ -60,11 +73,10 @@ criterion = nn.MSELoss()
 train_loss = []
 valid_loss = []
 
-for i in range(300):
+for i in range(800):
     model.train()
     train_epoch_loss = []
-    if i % 3 == 0:
-        print("epoch:", i)
+
     for j in range(len(trainX) // batch_size):
         batch_x = torch.from_numpy(trainX[j * batch_size:(j + 1) * batch_size]).float()
         batch_y = torch.from_numpy(train_Y[j * batch_size:(j + 1) * batch_size]).float()
@@ -74,8 +86,10 @@ for i in range(300):
         loss.backward()
         adam.step()
         train_epoch_loss.append(loss.item())
-        print(loss.item())
+        #  print(loss.item())
         train_loss.append(loss.item())
+        if i % 10 == 0:
+            print("at " + str(i) + "loss", loss.item())
 
     model.eval()
     if i % 10 == 0:
@@ -88,3 +102,4 @@ for i in range(300):
             loss = criterion(output, batch_y)
             valid_epoch_loss.append(loss.item())
             valid_loss.append(loss.item())
+            print(loss.item())

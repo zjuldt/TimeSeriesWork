@@ -25,17 +25,18 @@ class BaseModel(nn.Module):
 
         self.encoder_LSTM = nn.LSTM(feature_num, encoder_units, batch_size)  # 输出 ： output, h, c
         # torch 中的调用 （input_size , hidden_size, num_layer）
-        self.dense_list = nn.ModuleList([nn.Linear(feature_num + encoder_units, feature_num)] * self.look_back)
+        self.dense_list = nn.ModuleList([nn.Linear(feature_num + encoder_units, feature_num)
+                                         for i in range(self.look_back)])
 
         self.decoder_LSTM = nn.LSTM(256, decoder_units, batch_size)
 
         # 定了三个全连接层
         self.dense_fc_list = nn.ModuleList([nn.Linear(128, 64) for i in range(self.n_output)])
 
-        self.decoder_dense_list = [nn.Linear(64, 1)] * self.n_output
+        self.decoder_dense_list = nn.ModuleList([nn.Linear(64, 1) for i in range(self.n_output)])
 
-        self.dense_list_dense = nn.ModuleList([nn.Linear(256, 128)] * self.n_output)
-        self.dense_list_linear = nn.ModuleList([nn.Linear(128, 1)] * self.n_output)
+        self.dense_list_dense = nn.ModuleList([nn.Linear(256, 128) for i in range(self.n_output)])
+        self.dense_list_linear = nn.ModuleList([nn.Linear(128, 1) for i in range(self.n_output)])
 
     def forward(self, x):
         # Step 1: a * x
@@ -82,9 +83,9 @@ class BaseModel(nn.Module):
             concat2 = torch.cat([encoder_output, con], dim=2)
             # concat2 shape = [64, 50, 256]
             energies = self.dense_list_dense[i](concat2)
-            energies = torch.tanh(energies) # activate function : tanh
+            energies = torch.tanh(energies)  # activate function : tanh
             # energies shape = [64, 50, 128]
-            energies = self.dense_list_linear[i](energies) # activate function : linear
+            energies = self.dense_list_linear[i](energies)  # activate function : linear
 
             # energies shape = [64, 50, 1]
             alpha = nn.functional.softmax(energies, dim=1)
